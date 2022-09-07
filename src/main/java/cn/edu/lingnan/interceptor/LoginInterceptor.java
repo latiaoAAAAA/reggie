@@ -19,11 +19,19 @@ public class LoginInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        log.info("拦截。。。");
         if (request.getSession().getAttribute("employee")!=null) {
             log.info("已登录，ID为{}",request.getSession().getAttribute("employee"));
+            ThreadLocalUtil.put((Long) request.getSession().getAttribute("employee"));
             return true;
         }
+        log.info("未登录");
         response.getWriter().write(JSON.toJSONString(R.error("NOTLOGIN")));
         return false;
+    }
+
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+        ThreadLocalUtil.remove();
     }
 }

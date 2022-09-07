@@ -95,10 +95,10 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
         log.info("新增员工，员工信息：{}",employee.toString());
         //2.设置初始密码 及 其他信息
         employee.setPassword(DigestUtils.md5DigestAsHex("123456".getBytes()));
-        employee.setCreateTime(LocalDateTime.now());
-        employee.setUpdateTime(LocalDateTime.now());
-        employee.setCreateUser(empId);
-        employee.setUpdateUser(empId);
+//        employee.setCreateTime(LocalDateTime.now());
+//        employee.setUpdateTime(LocalDateTime.now());
+//        employee.setCreateUser(empId);
+//        employee.setUpdateUser(empId);
         boolean isSuccess = save(employee);
         if (!isSuccess) {
             return R.error("添加员工失败！");
@@ -110,13 +110,13 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
     public R<Page> list(Integer page, Integer pageSize,String name) {
         log.info("分页获取员工信息，第{}页",page.toString());
         Page<Employee> pageInfo = new Page<>(page, pageSize);
-        Page<Employee> results = page(pageInfo, new LambdaQueryWrapper<Employee>()
+        page(pageInfo, new LambdaQueryWrapper<Employee>()
                 .like(StringUtils.isNotEmpty(name), Employee::getName, name)
                 .orderByDesc(Employee::getCreateTime));
-        if (results==null) {
+        if (pageInfo==null) {
             return R.error("获取失败！");
         }
-        return R.success(results);
+        return R.success(pageInfo);
     }
 
     @Override
@@ -135,8 +135,8 @@ public class EmployeeServiceImpl extends ServiceImpl<EmployeeMapper, Employee> i
         //1.记录日志
         log.info("修改员工信息：{}",employee.toString());
         //2.设置初始密码 及 其他信息
-        employee.setUpdateTime(LocalDateTime.now());
-        employee.setUpdateUser(empId);
+//        employee.setUpdateTime(LocalDateTime.now());
+//        employee.setUpdateUser(empId);
         boolean isSuccess = updateById(employee);
         if (!isSuccess) {
             return R.error("修改员工信息失败！");

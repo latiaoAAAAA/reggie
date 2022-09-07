@@ -1,43 +1,75 @@
 package cn.edu.lingnan.entity;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-//实体类
-@Data   //lombok的注解，生成getter和setter等方法
-public class Employee implements Serializable {
+/**
+ 菜品
+ */
+@Data
+public class Dish implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private Long id;
 
-    private String username;
 
+    //菜品名称
     private String name;
 
-    private String password;
 
-    private String phone;
+    //菜品分类id
+    private Long categoryId;
 
-    private String sex;
 
-    private String idNumber;  //身份证号码
+    //菜品价格
+    private BigDecimal price;
 
+
+    //商品码
+    private String code;
+
+
+    //图片
+    private String image;
+
+
+    //描述信息
+    private String description;
+
+
+    //0 停售 1 起售
     private Integer status;
+
+
+    //顺序
+    private Integer sort;
+
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
+
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
+
 
     @TableField(fill = FieldFill.INSERT)
     private Long createUser;
 
+
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private Long updateUser;
+
+
+    //是否删除
+    private Integer isDeleted;
 
 }
