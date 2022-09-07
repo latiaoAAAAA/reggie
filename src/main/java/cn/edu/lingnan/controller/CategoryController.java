@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 @RestController
 @RequestMapping("/category")
@@ -34,5 +35,10 @@ public class CategoryController {
     @DeleteMapping
     public R<String> delete(@RequestParam("ids") Long ids){
         return categoryService.delete(ids);
+    }
+
+    @GetMapping("/list")
+    public R<List> list(@RequestParam("type") Integer type){
+        return categoryService.list(type);
     }
 }

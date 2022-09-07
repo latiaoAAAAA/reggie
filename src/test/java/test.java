@@ -4,6 +4,7 @@ import cn.hutool.core.bean.copier.CopyOptions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class test {
@@ -23,5 +24,13 @@ public class test {
 //                        .setIgnoreNullValue(true)
 //                        .setFieldValueEditor((fieldName,fieldValue)->fieldValue.toString())
 //        );
+    }
+
+    @Test
+    void test4() {
+        long[] ids = {123L,456L,789L};
+        System.out.println("Arrays.toString(ids) = " + Arrays.toString(ids));
+        String s = Arrays.toString(ids);
+        System.out.println("s = " + s);
     }
 }
