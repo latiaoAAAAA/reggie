@@ -2,7 +2,6 @@ package cn.edu.lingnan.controller;
 
 import cn.edu.lingnan.common.R;
 import cn.edu.lingnan.dto.DishDto;
-import cn.edu.lingnan.entity.Dish;
 import cn.edu.lingnan.service.DishService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;

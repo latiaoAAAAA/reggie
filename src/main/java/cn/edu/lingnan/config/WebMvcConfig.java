@@ -26,7 +26,7 @@ public class WebMvcConfig extends WebMvcConfigurationSupport {
     @Override
     protected void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new LoginInterceptor())
-                .excludePathPatterns("/employee/login","/employee/logout","/backend/**","/front/**");
+                .excludePathPatterns("/employee/login","/employee/logout","/backend/**","/front/**","/user/sendMsg","/user/login");
     }
 
     @Override  //拓展消息装换器,用于前后端信息互传时对消息进行装换(解决经度丢失，日期格式等问题)

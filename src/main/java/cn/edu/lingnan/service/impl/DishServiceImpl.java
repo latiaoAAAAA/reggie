@@ -5,11 +5,13 @@ import cn.edu.lingnan.dto.DishDto;
 import cn.edu.lingnan.entity.Category;
 import cn.edu.lingnan.entity.Dish;
 import cn.edu.lingnan.entity.DishFlavor;
+import cn.edu.lingnan.entity.SetmealDish;
 import cn.edu.lingnan.mapper.DishMapper;
 import cn.edu.lingnan.service.CategoryService;
 import cn.edu.lingnan.service.DishFlavorService;
 import cn.edu.lingnan.service.DishService;
 
+import cn.edu.lingnan.service.SetmealDishService;
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -18,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -92,6 +95,7 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
      * @return
      */
     @Override
+    @Transactional
     public R<String> saveWithDishDto(DishDto dishDto) {
         boolean isSuccessDish = save(dishDto);
         if (!isSuccessDish) {
@@ -114,6 +118,7 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
      * @return
      */
     @Override
+    @Transactional
     public R<String> updateWithDishDto(DishDto dishDto) {
         boolean isSuccessDish = updateById(dishDto);
         if (!isSuccessDish) {
@@ -155,7 +160,12 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
      * @return
      */
     @Override
+    @Transactional
     public R<String> removeDishAntFlavorByIds(List<Long> ids) {
+        List<String> list = dishMapper.getStatusDish(ids);
+        if (!list.isEmpty()) {
+            return R.error(list.toString()+"菜品正在售卖，不能删除！");
+        }
         boolean isSuccessDish = removeByIds(ids);
         if (!isSuccessDish) {
             return R.error("删除失败！");
@@ -176,10 +186,10 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
     public R<List> listDishByCategoryId(Long categoryId, String name) {
         List<Dish> dishList = null;
         if (categoryId!=null){
-            dishList = list(new LambdaQueryWrapper<Dish>().eq(Dish::getCategoryId, categoryId));
+            dishList = list(new LambdaQueryWrapper<Dish>().eq(Dish::getCategoryId, categoryId).eq(Dish::getStatus,1));
         }
         if (name!=null && name!=""){
-            dishList = list(new LambdaQueryWrapper<Dish>().like(StringUtils.isNotEmpty(name),Dish::getName,name));
+            dishList = list(new LambdaQueryWrapper<Dish>().like(StringUtils.isNotEmpty(name),Dish::getName,name).eq(Dish::getStatus,1));
         }
         if (dishList ==null || dishList.isEmpty()) {
             return R.error("查询所有菜品失败！");

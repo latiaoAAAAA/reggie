@@ -1,7 +1,6 @@
 package cn.edu.lingnan.service.impl;
 
 import cn.edu.lingnan.common.R;
-import cn.edu.lingnan.dto.DishDto;
 import cn.edu.lingnan.dto.SetmealDto;
 import cn.edu.lingnan.entity.*;
 import cn.edu.lingnan.mapper.SetmealMapper;
@@ -16,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -76,6 +76,7 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
      * @return
      */
     @Override
+    @Transactional
     public R<String> saveWithSetmealDto(SetmealDto setmealDto) {
         boolean isSuccessSetmeal = save(setmealDto);
         if (!isSuccessSetmeal) {
@@ -112,6 +113,7 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
      * @return
      */
     @Override
+    @Transactional
     public R<String> updateWithSetmealDto(SetmealDto setmealDto) {
         boolean isSuccessSetmeal = updateById(setmealDto);
         if (!isSuccessSetmeal) {
@@ -153,7 +155,12 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
      * @return
      */
     @Override
+    @Transactional
     public R<String> removeDishAntFlavorByIds(List<Long> ids) {
+        List<String> list = setmealMapper.getStatusSetmeal(ids);
+        if (!list.isEmpty()) {
+            return R.error(list.toString()+"套餐正在售卖，不能删除！");
+        }
         boolean isSuccessSetmeal = removeByIds(ids);
         if (!isSuccessSetmeal) {
             return R.error("删除失败！");
