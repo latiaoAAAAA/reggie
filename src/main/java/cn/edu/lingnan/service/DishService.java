@@ -6,6 +6,8 @@ import cn.edu.lingnan.entity.Dish;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.List;
+
 public interface DishService extends IService<Dish> {
     R<Page> list(Integer page, Integer pageSize, String name);
 
@@ -16,4 +18,8 @@ public interface DishService extends IService<Dish> {
     R<String> updateWithDishDto(DishDto dishDto);
 
     R<String> updateStatusBatchByIds(Integer status, long[] ids);
+
+    R<String> removeDishAntFlavorByIds(List<Long> ids);
+
+    R<List> listDishByCategoryId(Long categoryId,String name);
 }

@@ -37,8 +37,13 @@ public class CategoryController {
         return categoryService.delete(ids);
     }
 
+    /**
+     * 获取分类列表(菜品或套餐)
+     * @param type
+     * @return
+     */
     @GetMapping("/list")
-    public R<List> list(@RequestParam("type") Integer type){
-        return categoryService.list(type);
+    public R<List> listType(@RequestParam("type") Integer type){
+        return categoryService.listType(type);
     }
 }

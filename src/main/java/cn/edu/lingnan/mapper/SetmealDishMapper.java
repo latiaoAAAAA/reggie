@@ -1,23 +1,24 @@
 package cn.edu.lingnan.mapper;
 
-import cn.edu.lingnan.entity.Setmeal;
+import cn.edu.lingnan.entity.SetmealDish;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Update;
+
+import java.util.List;
 
 @Mapper
-public interface SetmealMapper extends BaseMapper<Setmeal> {
-    @Update({
+public interface SetmealDishMapper extends BaseMapper<SetmealDish> {
+    @Delete({
             "<script>",
-                "update",
-                "setmeal",
-                "set status = #{status}",
-                "where id in",
+                "delete ",
+                "from setmeal_dish",
+                "where setmeal_id in",
                     "<foreach collection='ids' item='id' open='(' separator=',' close=')'>",
                         "#{id}",
                     "</foreach>",
             "</script>"
     })
-    Integer updateStatusBatchByIds(@Param("status") Integer status, @Param("ids") long[] ids);
+    Integer removeSetmealDishByDishId(@Param("ids") List<Long> ids);
 }

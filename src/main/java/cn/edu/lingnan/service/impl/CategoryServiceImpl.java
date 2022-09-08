@@ -9,7 +9,6 @@ import cn.edu.lingnan.mapper.CategoryMapper;
 import cn.edu.lingnan.service.CategoryService;
 import cn.edu.lingnan.service.DishService;
 import cn.edu.lingnan.service.SetmealService;
-import cn.hutool.core.collection.ListUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -18,9 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -96,7 +93,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
     }
 
     @Override
-    public R<List> list(Integer type) {
+    public R<List> listType(Integer type) {
         List<Category> categoryList = list(new LambdaQueryWrapper<Category>().eq(Category::getType,type));
         if (categoryList==null || categoryList.isEmpty()) {
             return R.error("获取分类列表失败！");
