@@ -178,22 +178,50 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
     }
 
     /**
-     * 添加套餐时获取菜品数据
+     * 管理端 添加套餐时获取菜品数据
+     * 用户端 菜品列表展示与菜品详细的展示
      * @param categoryId
      * @return
      */
     @Override
-    public R<List> listDishByCategoryId(Long categoryId, String name) {
+    public R<List> listDishByCategoryId(Long categoryId, String name, Integer status) {
+        status = status==null?1:status;
         List<Dish> dishList = null;
+        List<DishDto> dishDtoList = null;
         if (categoryId!=null){
-            dishList = list(new LambdaQueryWrapper<Dish>().eq(Dish::getCategoryId, categoryId).eq(Dish::getStatus,1));
+            dishList = list(new LambdaQueryWrapper<Dish>().eq(Dish::getCategoryId, categoryId).eq(Dish::getStatus,status));
+            dishDtoList = dishList.stream().map(dish -> {
+                DishDto dishDto = new DishDto();
+                BeanUtil.copyProperties(dish,dishDto);
+                Category category = categoryService.getById(categoryId);
+                if (category != null) {
+                    String categoryName = category.getName();
+                    dishDto.setCategoryName(categoryName);
+                }
+                List<DishFlavor> dishFlavorList = dishFlavorService.list(new LambdaQueryWrapper<DishFlavor>().eq(DishFlavor::getDishId, dish.getId()));
+                dishDto.setFlavors(dishFlavorList);
+                return dishDto;
+            }).collect(Collectors.toList());
         }
         if (name!=null && name!=""){
-            dishList = list(new LambdaQueryWrapper<Dish>().like(StringUtils.isNotEmpty(name),Dish::getName,name).eq(Dish::getStatus,1));
+            dishList = list(new LambdaQueryWrapper<Dish>().like(StringUtils.isNotEmpty(name),Dish::getName,name).eq(Dish::getStatus,status));
+            dishDtoList = dishList.stream().map(dish -> {
+                DishDto dishDto = new DishDto();
+                BeanUtil.copyProperties(dish,dishDto);
+                Category category = categoryService.getById(categoryId);
+                if (category != null) {
+                    String categoryName = category.getName();
+                    dishDto.setCategoryName(categoryName);
+                }
+                List<DishFlavor> dishFlavorList = dishFlavorService.list(new LambdaQueryWrapper<DishFlavor>().eq(DishFlavor::getDishId, dish.getId()));
+                dishDto.setFlavors(dishFlavorList);
+                return dishDto;
+            }).collect(Collectors.toList());
         }
-        if (dishList ==null || dishList.isEmpty()) {
+
+        if (dishDtoList ==null || dishDtoList.isEmpty()) {
             return R.error("查询所有菜品失败！");
         }
-        return R.success(dishList);
+        return R.success(dishDtoList);
     }
 }

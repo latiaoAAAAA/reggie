@@ -9,6 +9,7 @@ import cn.edu.lingnan.mapper.CategoryMapper;
 import cn.edu.lingnan.service.CategoryService;
 import cn.edu.lingnan.service.DishService;
 import cn.edu.lingnan.service.SetmealService;
+import cn.hutool.core.collection.ListUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -94,7 +95,12 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
 
     @Override
     public R<List> listType(Integer type) {
-        List<Category> categoryList = list(new LambdaQueryWrapper<Category>().eq(Category::getType,type));
+        List<Category> categoryList = null;
+        if (type==null) {
+            categoryList = list();
+        }else {
+            categoryList = list(new LambdaQueryWrapper<Category>().eq(Category::getType,type));
+        }
         if (categoryList==null || categoryList.isEmpty()) {
             return R.error("获取分类列表失败！");
         }

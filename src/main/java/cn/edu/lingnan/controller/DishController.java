@@ -74,14 +74,17 @@ public class DishController {
     }
 
     /**
-     * 添加套餐时获取菜品数据
+     * 管理端 添加套餐时获取菜品数据
+     * 用户端 菜品列表展示与菜品详细的展示
      * @param categoryId
      * @return
      */
     @GetMapping("/list")
     public R<List> listDishByCategoryId(
             @RequestParam(value = "categoryId",required = false) Long categoryId,
-            @RequestParam(value = "name",required = false) String name){
-        return dishService.listDishByCategoryId(categoryId,name);
+            @RequestParam(value = "name",required = false) String name,
+            @RequestParam(value = "status",required = false) Integer status
+    ){
+        return dishService.listDishByCategoryId(categoryId,name,status);
     }
 }

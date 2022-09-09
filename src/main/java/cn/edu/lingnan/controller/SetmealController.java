@@ -79,4 +79,25 @@ public class SetmealController {
     public R<String> deleteByIds(@RequestParam("ids") List<Long> ids){
         return setmealService.removeDishAntFlavorByIds(ids);
     }
+
+    /**
+     * 根据categoryId获取套餐---用户端展示
+     * @param categoryId
+     * @param status
+     * @return
+     */
+    @GetMapping("/list")
+    public R<List> listByCategoryId(@RequestParam("categoryId") Long categoryId, @RequestParam("status") Integer status){
+        return setmealService.listByCategoryId(categoryId,status);
+    }
+
+    /**
+     * 根据setmealId获取套餐内dish---用户端展示
+     * @param id
+     * @return
+     */
+    @GetMapping("/dish/{id}")
+    public R<List> listSetmealDishBySetmealId(@PathVariable("id") Long id){
+        return setmealService.listSetmealDishBySetmealId(id);
+    }
 }

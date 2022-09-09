@@ -20,4 +20,8 @@ public interface SetmealService extends IService<Setmeal> {
     R<String> updateStatusBatchByIds(Integer status, long[] ids);
 
     R<String> removeDishAntFlavorByIds(List<Long> ids);
+
+    R<List> listByCategoryId(Long categoryId, Integer status);
+
+    R<List> listSetmealDishBySetmealId(Long id);
 }

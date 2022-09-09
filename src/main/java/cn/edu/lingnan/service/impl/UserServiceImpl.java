@@ -36,7 +36,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     @Transactional
     public R<String> sendCode(String phone) {
-        //1.删除随机验证码
+        if (stringRedisTemplate.hasKey(LOGIN_USER_CODE+phone)) {
+            return R.success(stringRedisTemplate.opsForValue().get(LOGIN_USER_CODE+phone));
+        }
+        //1.生成随机验证码
         String code = RandomUtil.randomNumbers(6);
         //2.存入redis，并返回验证码
         stringRedisTemplate.opsForValue().set(LOGIN_USER_CODE+phone,code,2L, TimeUnit.MINUTES);
@@ -63,19 +66,24 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         User user = query().eq(StringUtils.isNotEmpty(phone), "phone", phone).one();
 //        User user = getOne(new LambdaQueryWrapper<User>().eq(StringUtils.isNotEmpty(phone), User::getPhone, phone));
         //6.用户不存在，注册新用户
+        long userId = 0;
         if (BeanUtil.isEmpty(user)) {
             User registerUser = new User();
             registerUser.setName("user_"+RandomUtil.randomString(7));
             registerUser.setPhone(phone);
+            registerUser.setStatus(1);
             registerUser.setAvatar("651f6c36-2b78-484c-b3d9-a8c7d24c9b94.jpg");
             boolean isSuccess = save(registerUser);
+            userId = registerUser.getId();
             if (!isSuccess) {
                 return R.error("注册失败!");
             }
+        }else {
+            userId=user.getId();
         }
         //7.用户存在
         String token = UUID.randomUUID().toString(true);
-        stringRedisTemplate.opsForValue().set(LOGIN_USER_TOKEN+phone,token);
+        stringRedisTemplate.opsForValue().set(LOGIN_USER_TOKEN+token, String.valueOf(userId),1L,TimeUnit.DAYS);
         return R.success(token);
     }
 
@@ -123,4 +131,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 //        // TODO 6.返回
 //        return Result.ok(token);
 //    }
+
+    @Override
+    public String getUserNameById(Long id) {
+        User one = query().eq("id", id).eq("status", 1).one();
+        return one.getName();
+    }
 }

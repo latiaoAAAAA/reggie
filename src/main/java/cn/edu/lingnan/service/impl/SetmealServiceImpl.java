@@ -1,10 +1,12 @@
 package cn.edu.lingnan.service.impl;
 
 import cn.edu.lingnan.common.R;
+import cn.edu.lingnan.dto.DishDto;
 import cn.edu.lingnan.dto.SetmealDto;
 import cn.edu.lingnan.entity.*;
 import cn.edu.lingnan.mapper.SetmealMapper;
 import cn.edu.lingnan.service.CategoryService;
+import cn.edu.lingnan.service.DishService;
 import cn.edu.lingnan.service.SetmealDishService;
 import cn.edu.lingnan.service.SetmealService;
 import cn.hutool.core.bean.BeanUtil;
@@ -32,6 +34,9 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
 
     @Autowired
     private SetmealMapper setmealMapper;
+
+    @Autowired
+    private DishService dishService;
 
     /**
      * 分页获取套餐信息
@@ -170,5 +175,51 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
             return R.error("删除失败！");
         }
         return R.success("删除成功！");
+    }
+
+    /**
+     * 根据categoryId获取套餐---用户端展示
+     * @param categoryId
+     * @param status
+     * @return
+     */
+    @Override
+    public R<List> listByCategoryId(Long categoryId, Integer status) {
+        List<Setmeal> setmeals = list(new LambdaQueryWrapper<Setmeal>().eq(Setmeal::getCategoryId, categoryId).eq(Setmeal::getStatus, status));
+        List<SetmealDto> setmealDtoList = setmeals.stream().map((setmeal) -> {
+            SetmealDto setmealDto = new SetmealDto();
+            BeanUtil.copyProperties(setmeal, setmealDto);
+            Category category = categoryService.getById(categoryId);
+            if (category != null) {
+                String categoryName = category.getName();
+                setmealDto.setCategoryName(categoryName);
+            }
+            List<SetmealDish> setmealDishes = setmealDishService.list(new LambdaQueryWrapper<SetmealDish>().eq(SetmealDish::getSetmealId, setmeal.getId()));
+            setmealDto.setSetmealDishes(setmealDishes);
+            return setmealDto;
+        }).collect(Collectors.toList());
+        if (setmealDtoList==null || setmealDtoList.isEmpty()) {
+            return R.error("抱歉，该类无套餐！");
+        }
+        return R.success(setmealDtoList);
+    }
+
+    /**
+     * 根据setmealId获取套餐内dish---用户端展示
+     * @param id
+     * @return
+     */
+    @Override
+    public R<List> listSetmealDishBySetmealId(Long id) {
+        List<SetmealDish> setmealDishes = setmealDishService.list(new LambdaQueryWrapper<SetmealDish>().eq(SetmealDish::getSetmealId, id));
+        List<Dish> dishes = setmealDishes.stream().map(setmealDish -> {
+            Long dishId = setmealDish.getDishId();
+            Dish dish = dishService.getById(dishId);
+            return dish;
+        }).collect(Collectors.toList());
+        if (dishes==null || dishes.isEmpty()){
+            return R.error("抱歉，该套餐暂无菜品！");
+        }
+        return R.success(dishes);
     }
 }

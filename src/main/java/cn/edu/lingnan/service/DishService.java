@@ -21,5 +21,5 @@ public interface DishService extends IService<Dish> {
 
     R<String> removeDishAntFlavorByIds(List<Long> ids);
 
-    R<List> listDishByCategoryId(Long categoryId,String name);
+    R<List> listDishByCategoryId(Long categoryId,String name,Integer status);
 }

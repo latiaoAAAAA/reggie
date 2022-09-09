@@ -22,6 +22,12 @@ public class CategoryController {
         return categoryService.save(request,category);
     }
 
+    /**
+     * 分页获取 菜品或套餐管理
+     * @param page
+     * @param pageSize
+     * @return
+     */
     @GetMapping("/page")
     public R<Page> list(@RequestParam("page") Integer page, @RequestParam("pageSize") Integer pageSize){
         return categoryService.list(page,pageSize);
@@ -43,7 +49,7 @@ public class CategoryController {
      * @return
      */
     @GetMapping("/list")
-    public R<List> listType(@RequestParam("type") Integer type){
+    public R<List> listType(@RequestParam(value = "type",required = false) Integer type){
         return categoryService.listType(type);
     }
 }

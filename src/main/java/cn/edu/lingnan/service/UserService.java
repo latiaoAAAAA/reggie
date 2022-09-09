@@ -10,4 +10,6 @@ public interface UserService extends IService<User> {
     R<String> sendCode(String phone);
 
     R<String> login(Map map);
+
+    String getUserNameById(Long id);
 }
