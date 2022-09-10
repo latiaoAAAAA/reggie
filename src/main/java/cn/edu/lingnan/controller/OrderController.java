@@ -1,10 +1,9 @@
 package cn.edu.lingnan.controller;
 
+import cn.edu.lingnan.common.JacksonObjectMapper;
 import cn.edu.lingnan.common.R;
 import cn.edu.lingnan.dto.OrdersDto;
-import cn.edu.lingnan.entity.Orders;
 import cn.edu.lingnan.service.OrderService;
-
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -35,7 +34,7 @@ public class OrderController {
      * @return
      */
     @GetMapping("/userPage")
-    public R<Page> getOrders(@RequestParam("page") Long page, @RequestParam("pageSize") Long pageSize){
+    public R<Page> getUserOrders(@RequestParam("page") Long page, @RequestParam("pageSize") Long pageSize){
         return orderService.getOrders(page,pageSize);
     }
 
@@ -47,5 +46,25 @@ public class OrderController {
     @PostMapping("/again")
     public R<String> submitAgainOrder(@RequestBody Map<String,Long> map){
         return orderService.submitAgainOrder(map);
+    }
+
+    /**
+     * 管理端 获取所有订单
+     * @param page
+     * @param pageSize
+     * @param number
+     * @param beginTime
+     * @param endTime
+     * @return
+     */
+    @GetMapping("/page")
+    public R<Page> getAllOrders(
+            @RequestParam("page") Long page,
+            @RequestParam("pageSize") Long pageSize,
+            @RequestParam(value = "number",required = false) String number,
+            @RequestParam(value = "beginTime",required = false) String beginTime,
+            @RequestParam(value = "endTime",required = false) String endTime
+            ){
+        return orderService.getAllOrders(page,pageSize,number,beginTime,endTime);
     }
 }

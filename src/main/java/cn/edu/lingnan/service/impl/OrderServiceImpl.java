@@ -10,12 +10,14 @@ import cn.edu.lingnan.service.AddressBookService;
 import cn.edu.lingnan.service.OrderDetailService;
 import cn.edu.lingnan.service.OrderService;
 import cn.edu.lingnan.service.UserService;
+import cn.edu.lingnan.utils.OrderNumberWorder;
 import cn.edu.lingnan.utils.ThreadLocalUtil;
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,6 +54,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
         //根据userId获取userName
         String userName = userService.getUserNameById(userId);
         //装配OrdersDto
+        ordersDto.setNumber(OrderNumberWorder.getNumber());
         ordersDto.setUserId(ThreadLocalUtil.get());
         ordersDto.setOrderTime(LocalDateTime.now());
         ordersDto.setCheckoutTime(LocalDateTime.now());
@@ -110,19 +113,17 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
         Long userId = ThreadLocalUtil.get();
         //获取orderId
         Long orderId = map.get("id");
-        System.err.println("orderId = " + orderId.toString());
         //根据orderId查询Order
         Orders oneOrder = getOne(new LambdaQueryWrapper<Orders>().eq(Orders::getId, orderId));
-        System.err.println("oneOrder = " + oneOrder.toString());
         //根据orderId查询OrderDetail
         List<OrderDetail> orderDetails = orderDetailService.list(new LambdaQueryWrapper<OrderDetail>().eq(OrderDetail::getOrderId, orderId));
-        System.err.println("orderDetails = " + orderDetails.toString());
         //装配oneOrder
         oneOrder.setId(null);
+        oneOrder.setStatus(1);
+        oneOrder.setNumber(OrderNumberWorder.getNumber());
         oneOrder.setUserId(ThreadLocalUtil.get());
         oneOrder.setOrderTime(LocalDateTime.now());
         oneOrder.setCheckoutTime(LocalDateTime.now());
-        System.err.println("newOneOrder = " + oneOrder.toString());
         // TODO 开始保存
         //保存订单
         boolean isSuccess1 = save(oneOrder);
@@ -130,13 +131,50 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
         Long newOrderId = oneOrder.getId();
         //装配newOrderId进orderDetail
         List<OrderDetail> orderDetailList = orderDetails.stream().map(orderDetail -> {
+            orderDetail.setId(null);
             orderDetail.setOrderId(newOrderId);
             return orderDetail;
         }).collect(Collectors.toList());
         //保存orderDetail
         boolean isSuccess2 = orderDetailService.saveBatch(orderDetailList);
         //返回
-//        return isSuccess1&&isSuccess2?R.success("再下一单成功"):R.error("再下一单失败");
-        return null;
+        return isSuccess1&&isSuccess2?R.success("再下一单成功"):R.error("再下一单失败");
+    }
+
+    @Override
+    public R<Page> getAllOrders(Long page, Long pageSize, String number, String beginTime, String endTime) {
+        //获取当前登录用户id
+        Long userId = ThreadLocalUtil.get();
+        //创建page
+        Page<Orders> ordersPage = new Page<>(page, pageSize);
+        //准备lambdaQueryWrapper
+        LambdaQueryWrapper<Orders> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        //添加条件
+        if (StringUtils.isNotEmpty(beginTime) && StringUtils.isNotEmpty(endTime)){
+            lambdaQueryWrapper.between(Orders::getOrderTime,beginTime,endTime);
+        }
+        if (StringUtils.isNotEmpty(number)){
+            lambdaQueryWrapper.like(Orders::getNumber,number);
+        }
+        //查询
+        page(ordersPage, lambdaQueryWrapper);
+        //创建dtoPage
+        Page<OrdersDto> ordersDtoPage = new Page<>();
+        //copy对象，排除records
+        BeanUtil.copyProperties(ordersPage,ordersDtoPage,"records");
+        //手动装配ordersDtoList
+        List<OrdersDto> ordersDtoList = ordersPage.getRecords().stream().map(orders -> {
+            OrdersDto ordersDto = new OrdersDto();
+            BeanUtil.copyProperties(orders, ordersDto);
+            Long ordersId = orders.getId();
+            List<OrderDetail> orderDetails = orderDetailService.list(
+                    new LambdaQueryWrapper<OrderDetail>().eq(OrderDetail::getOrderId, ordersId)
+            );
+            ordersDto.setOrderDetails(orderDetails);
+            return ordersDto;
+        }).collect(Collectors.toList());
+        //手动装配ordersDtoPage
+        ordersDtoPage.setRecords(ordersDtoList);
+        return ordersPage!=null?R.success(ordersDtoPage):R.error("获取所有订单失败");
     }
 }

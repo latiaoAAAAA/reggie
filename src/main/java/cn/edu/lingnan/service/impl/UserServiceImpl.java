@@ -4,6 +4,7 @@ import cn.edu.lingnan.common.R;
 import cn.edu.lingnan.entity.User;
 import cn.edu.lingnan.mapper.UserMapper;
 import cn.edu.lingnan.service.UserService;
+import cn.edu.lingnan.utils.ThreadLocalUtil;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.lang.UUID;
@@ -18,6 +19,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.Map;
@@ -132,9 +134,26 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 //        return Result.ok(token);
 //    }
 
+    /**
+     * 根据id获取userName，订单业务需要用到
+     * @param id
+     * @return
+     */
     @Override
     public String getUserNameById(Long id) {
         User one = query().eq("id", id).eq("status", 1).one();
         return one.getName();
+    }
+
+    @Override
+    @Transactional
+    public R<String> loginout(HttpServletRequest request) {
+        String token = request.getHeader("Authorization");
+        Boolean isSuccess = false;
+        if (stringRedisTemplate.hasKey(LOGIN_USER_TOKEN + token)) {
+            isSuccess = stringRedisTemplate.delete(LOGIN_USER_TOKEN + token);
+            ThreadLocalUtil.remove();
+        }
+        return isSuccess?R.success("退出成功"):R.error("退出失败");
     }
 }

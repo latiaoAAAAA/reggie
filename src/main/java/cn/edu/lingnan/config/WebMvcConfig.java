@@ -40,6 +40,7 @@ public class WebMvcConfig extends WebMvcConfigurationSupport {
                         "/front/**",
                         "/user/send",
                         "/user/login",
+                        "/user/loginout",
                         "/common/download",
                         "/common/upload"
                 );

@@ -1,7 +1,11 @@
 import cn.edu.lingnan.entity.Employee;
 import cn.edu.lingnan.entity.User;
+import cn.edu.lingnan.utils.OrderNumberWorder;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
+import cn.hutool.core.lang.Snowflake;
+import cn.hutool.core.lang.UUID;
+import cn.hutool.core.util.StrUtil;
 import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,4 +67,14 @@ public class test {
         System.out.println("user = " + user);
     }
 
+    @Test
+    void test7() {
+        long now = System.currentTimeMillis();
+        System.out.println("now = " + now);
+        String string = UUID.randomUUID().toString(true);
+        System.out.println("now+string = " + now + string);
+        long workerId = new Snowflake().getGenerateDateTime(1567879975232557058L);
+        System.out.println("workerId = " + workerId);
+        System.out.println("OrderNumberWorder.getNumber() = " + OrderNumberWorder.getNumber());
+    }
 }

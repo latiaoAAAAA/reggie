@@ -15,4 +15,6 @@ public interface OrderService extends IService<Orders> {
     R<Page> getOrders(Long page, Long pageSize);
 
     R<String> submitAgainOrder(Map<String,Long> map);
+
+    R<Page> getAllOrders(Long page, Long pageSize, String number, String beginTime, String endTime);
 }

@@ -36,7 +36,6 @@ public class LoginInterceptor implements HandlerInterceptor {
             return true;
         }else if (token !=null ||
                 StrUtil.isNotBlank(token)){
-            log.info("token:{}", token);
             //对比redis(redis中有，且有值，才放行)
             if (stringRedisTemplate.hasKey(LOGIN_USER_TOKEN + token)) {
                 //获取userId
