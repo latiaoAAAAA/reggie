@@ -6,11 +6,8 @@ import cn.edu.lingnan.mapper.UserMapper;
 import cn.edu.lingnan.service.UserService;
 import cn.edu.lingnan.utils.ThreadLocalUtil;
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.RandomUtil;
-import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -20,8 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -86,6 +81,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         //7.用户存在
         String token = UUID.randomUUID().toString(true);
         stringRedisTemplate.opsForValue().set(LOGIN_USER_TOKEN+token, String.valueOf(userId),1L,TimeUnit.DAYS);
+        log.info("用户注册:{}",user.toString());
         return R.success(token);
     }
 
@@ -148,12 +144,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     @Transactional
     public R<String> loginout(HttpServletRequest request) {
-        String token = request.getHeader("Authorization");
+        String token = request.getHeader("UAuthorization");
         Boolean isSuccess = false;
         if (stringRedisTemplate.hasKey(LOGIN_USER_TOKEN + token)) {
             isSuccess = stringRedisTemplate.delete(LOGIN_USER_TOKEN + token);
             ThreadLocalUtil.remove();
         }
+        log.info("退出登录");
         return isSuccess?R.success("退出成功"):R.error("退出失败");
     }
 }

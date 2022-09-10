@@ -1,7 +1,6 @@
 package cn.edu.lingnan.service.impl;
 
 import cn.edu.lingnan.common.R;
-import cn.edu.lingnan.dto.DishDto;
 import cn.edu.lingnan.dto.SetmealDto;
 import cn.edu.lingnan.entity.*;
 import cn.edu.lingnan.mapper.SetmealMapper;
@@ -47,7 +46,7 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
      */ //61d20592-b37f-4d72-a864-07ad5bb8f3bb.jpg
     @Override
     public R<Page> list(Integer page, Integer pageSize, String name) {
-        log.info("获取菜品，第{}页的{}个",page,pageSize);
+        log.info("获取菜品,第{}页的{}个",page,pageSize);
         Page<Setmeal> pageInfo = new Page<>(page,pageSize);
         page(pageInfo,new LambdaQueryWrapper<Setmeal>().like(StringUtils.isNotEmpty(name), Setmeal::getName, name).orderByDesc(Setmeal::getUpdateTime));
         Page<SetmealDto> setmealDtoPageInfo = new Page<>();
@@ -95,6 +94,7 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
         if (!isSuccessSetmealDish) {
             return R.error("添加套餐中的菜品失败！");
         }
+        log.info("添加套餐,id:{}",setmealDto.getId());
         return R.success("添加套餐成功！");
     }
 
@@ -109,6 +109,7 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
         List<SetmealDish> setmealDishList = setmealDishService.list(new LambdaQueryWrapper<SetmealDish>().eq(SetmealDish::getSetmealId, id));
         SetmealDto setmealDto = BeanUtil.copyProperties(setmeal, SetmealDto.class);
         setmealDto.setSetmealDishes(setmealDishList);
+        log.info("修改套餐,id:{}",id);
         return R.success(setmealDto);
     }
 
@@ -135,7 +136,7 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
         boolean isSuccessSetmealDish = setmealDishService.saveBatch(setmealDishes);
         if (!isSuccessSetmealDish) {
             return R.error("修改套餐菜品失败！");
-        }
+        }log.info("修改套餐,id:{}",setmealDto.getId());
         return R.success("修改套餐信息成功！");
     }
 
@@ -151,6 +152,7 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
         if (count==0){
             return R.error(status==0?"停售失败！":"启售失败！");
         }
+        log.info("id为{}的套餐{}",ids.toString(),status==0?"停售":"起售");
         return R.success(status==0?"停售成功！":"启售成功！");
     }
 
@@ -174,6 +176,7 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
         if (!isSuccessSetmealDish) {
             return R.error("删除失败！");
         }
+        log.info("删除id为{}的套餐",ids.toString());
         return R.success("删除成功！");
     }
 
@@ -201,6 +204,7 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
         if (setmealDtoList==null || setmealDtoList.isEmpty()) {
             return R.error("抱歉，该类无套餐！");
         }
+        log.info("获取套餐,分类id为{}",categoryId);
         return R.success(setmealDtoList);
     }
 
@@ -220,6 +224,7 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
         if (dishes==null || dishes.isEmpty()){
             return R.error("抱歉，该套餐暂无菜品！");
         }
+        log.info("获取套餐id为{}的菜品",id);
         return R.success(dishes);
     }
 }

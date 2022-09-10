@@ -20,9 +20,14 @@ public class CommonController {
     @Value("${reggie.path}")
     private String basePath;
 
+    /**
+     * 上传文件
+     * @param file
+     * @return
+     */
     @PostMapping("/upload")
     public R<String> upload(MultipartFile file){
-        log.info("上传文件：文件：{}",file.toString());
+        log.info("上传文件,文件:{}",file.toString());
         //原始文件名
         String originalFilename = file.getOriginalFilename();//abc.jpg
         String suffix = originalFilename.substring(originalFilename.lastIndexOf("."));
@@ -45,8 +50,14 @@ public class CommonController {
         return R.success(fileName);
     }
 
+    /**
+     * 下载文件
+     * @param name
+     * @param response
+     */
     @GetMapping("/download")
     public void download(@RequestParam("name") String name, HttpServletResponse response){
+        log.info("下载文件");
         try {
             //输入流，通过输入流读取文件内容
             FileInputStream fileInputStream = new FileInputStream(new File(basePath + name));

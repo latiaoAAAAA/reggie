@@ -15,6 +15,13 @@ public class DishController {
     @Autowired
     private DishService dishService;
 
+    /**
+     * 分页获取菜品列表 Dish
+     * @param page
+     * @param pageSize
+     * @param name
+     * @return
+     */
     @GetMapping("/page")
     public R<Page> list(@RequestParam("page") Integer page,
                         @RequestParam("pageSize") Integer pageSize,
@@ -23,7 +30,7 @@ public class DishController {
     }
 
     /**
-     * 添加菜品数据
+     * 添加菜品数据 Dish
      * @param dishDto
      * @return
      */
@@ -33,7 +40,7 @@ public class DishController {
     }
 
     /**
-     * 菜品信息回显
+     * 菜品信息回显 Dish
      * @param id
      * @return
      */
@@ -43,7 +50,7 @@ public class DishController {
     }
 
     /**
-     * 修改菜品信息
+     * 修改菜品信息 Dish
      * @param dishDto
      * @return
      */
@@ -53,7 +60,7 @@ public class DishController {
     }
 
     /**
-     * 批量停售或起启售
+     * 批量停售或起启售 Dish
      * @param status
      * @param ids
      * @return
@@ -64,7 +71,7 @@ public class DishController {
     }
 
     /**
-     * 批量删除菜品数据
+     * 批量删除菜品数据 Dish
      * @param ids
      * @return
      */
@@ -74,8 +81,8 @@ public class DishController {
     }
 
     /**
-     * 管理端 添加套餐时获取菜品数据
-     * 用户端 菜品列表展示与菜品详细的展示
+     * 管理端 添加套餐时获取菜品数据 Dish
+     * 用户端 菜品列表展示与菜品详细的展示 Dish
      * @param categoryId
      * @return
      */

@@ -5,13 +5,11 @@ import cn.edu.lingnan.dto.DishDto;
 import cn.edu.lingnan.entity.Category;
 import cn.edu.lingnan.entity.Dish;
 import cn.edu.lingnan.entity.DishFlavor;
-import cn.edu.lingnan.entity.SetmealDish;
 import cn.edu.lingnan.mapper.DishMapper;
 import cn.edu.lingnan.service.CategoryService;
 import cn.edu.lingnan.service.DishFlavorService;
 import cn.edu.lingnan.service.DishService;
 
-import cn.edu.lingnan.service.SetmealDishService;
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -39,21 +37,24 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
     private DishMapper dishMapper;
 
     /**
-     * 分页获取菜品
-     * @param page
-     * @param pageSize
-     * @param name
-     * @return
+     * 分页获取菜品 Dish
+     * @param page 从第几页开始
+     * @param pageSize 一页多少条
+     * @param name 搜索框输入内容
+     * @return Page,内含list，total
      */
     @Override
     public R<Page> list(Integer page, Integer pageSize, String name) {
-        log.info("获取菜品，第{}页的{}个",page,pageSize);
+        log.info("获取菜品,第{}页/{}个",page,pageSize);
+        //创建分页page
         Page<Dish> pageInfo = new Page<>(page,pageSize);
+        //查询数据库
         page(pageInfo,new LambdaQueryWrapper<Dish>().like(StringUtils.isNotEmpty(name), Dish::getName, name).orderByDesc(Dish::getUpdateTime));
+        //创建分页DTOPage
         Page<DishDto> dishDtoPageInfo = new Page<>();
-
+        //复制参数
         BeanUtil.copyProperties(pageInfo,dishDtoPageInfo,"records");
-
+        //dish->dishDto
         List<Dish> dishList = pageInfo.getRecords();
         List<DishDto> dishDtoList = dishList.stream().map((item) -> {
             DishDto dishDto = new DishDto();
@@ -66,9 +67,8 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
             }
             return dishDto;
         }).collect(Collectors.toList());
-
+        //封装dtoPage
         dishDtoPageInfo.setRecords(dishDtoList);
-
         if (dishDtoPageInfo==null) {
             return R.error("查询失败！");
         }
@@ -76,7 +76,7 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
     }
 
     /**
-     * 修改数据时---回显数据
+     * 修改数据时---回显数据  Dish
      * @param id
      * @return
      */
@@ -86,40 +86,46 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
         List<DishFlavor> dishFlavorList = dishFlavorService.list(new LambdaQueryWrapper<DishFlavor>().eq(DishFlavor::getDishId, id));
         DishDto dishDto = BeanUtil.copyProperties(dish, DishDto.class);
         dishDto.setFlavors(dishFlavorList);
+        log.info("菜品数据回显,id:{}",id);
         return R.success(dishDto);
     }
 
     /**
-     * 添加菜品
+     * 添加菜品 Dish
      * @param dishDto
      * @return
      */
     @Override
     @Transactional
     public R<String> saveWithDishDto(DishDto dishDto) {
+        //保存进数据库
         boolean isSuccessDish = save(dishDto);
         if (!isSuccessDish) {
             return R.error("添加菜品失败！");
         }
+        //封装 口味 的列表进Dto
         List<DishFlavor> flavors = dishDto.getFlavors().stream().map(dishFlavor -> {
             dishFlavor.setDishId(dishDto.getId());
             return dishFlavor;
         }).collect(Collectors.toList());
+        //保存口味信息进数据库
         boolean isSuccessFlavor = dishFlavorService.saveBatch(flavors);
         if (!isSuccessFlavor) {
             return R.error("添加菜品口味失败！");
         }
+        log.info("添加{}菜品及口味",dishDto.getName());
         return R.success("添加菜品成功！");
     }
 
     /**
-     * 修改菜品信息
+     * 修改菜品信息 Dish
      * @param dishDto
      * @return
      */
     @Override
     @Transactional
     public R<String> updateWithDishDto(DishDto dishDto) {
+        //修改菜品数据
         boolean isSuccessDish = updateById(dishDto);
         if (!isSuccessDish) {
             return R.error("修改菜品信息失败！");
@@ -136,11 +142,12 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
         if (!isSuccessFlavor) {
             return R.error("修改菜品口味失败！");
         }
+        log.info("修改{}菜品数据",dishDto.getName());
         return R.success("修改菜品信息成功！");
     }
 
     /**
-     * （批量）停售或起售
+     * （批量）停售或起售 Dish
      * @param status
      * @param ids
      * @return
@@ -151,11 +158,12 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
         if (count==0){
             return R.error(status==0?"停售失败！":"启售失败！");
         }
+        log.info("id为{}的菜品{}",ids,status==0?"停售":"起售");
         return R.success(status==0?"停售成功！":"启售成功！");
     }
 
     /**
-     * 批量删除菜品数据
+     * 批量删除菜品数据 Dish
      * @param ids
      * @return
      */
@@ -174,12 +182,13 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
         if (!isSuccessFlavor) {
             return R.error("删除失败！");
         }
+        log.info("删除id为{}的菜品",ids);
         return R.success("删除成功！");
     }
 
     /**
-     * 管理端 添加套餐时获取菜品数据
-     * 用户端 菜品列表展示与菜品详细的展示
+     * 管理端 添加套餐时获取菜品数据 Dish
+     * 用户端 菜品列表展示与菜品详细的展示 Dish
      * @param categoryId
      * @return
      */

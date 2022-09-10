@@ -10,7 +10,7 @@ import cn.edu.lingnan.service.AddressBookService;
 import cn.edu.lingnan.service.OrderDetailService;
 import cn.edu.lingnan.service.OrderService;
 import cn.edu.lingnan.service.UserService;
-import cn.edu.lingnan.utils.OrderNumberWorder;
+import cn.edu.lingnan.utils.OrderNumberWorker;
 import cn.edu.lingnan.utils.ThreadLocalUtil;
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -54,7 +54,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
         //根据userId获取userName
         String userName = userService.getUserNameById(userId);
         //装配OrdersDto
-        ordersDto.setNumber(OrderNumberWorder.getNumber());
+        ordersDto.setNumber(OrderNumberWorker.getNumber());
         ordersDto.setUserId(ThreadLocalUtil.get());
         ordersDto.setOrderTime(LocalDateTime.now());
         ordersDto.setCheckoutTime(LocalDateTime.now());
@@ -75,6 +75,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
         }).collect(Collectors.toList());
         //保存orderDetail
         boolean isSuccess2 = orderDetailService.saveBatch(orderDetailList);
+        log.info("创建订单,id:{}",ordersId);
         //返回
         return isSuccess1&&isSuccess2?R.success("创建订单成功"):R.error("创建订单失败");
     }
@@ -103,6 +104,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
         }).collect(Collectors.toList());
         //手动装配ordersDtoPage
         ordersDtoPage.setRecords(ordersDtoList);
+        log.info("分页获取订单,第{}页/{}个",page,pageSize);
         return ordersPage!=null?R.success(ordersDtoPage):R.error("获取所有订单失败");
     }
 
@@ -120,7 +122,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
         //装配oneOrder
         oneOrder.setId(null);
         oneOrder.setStatus(1);
-        oneOrder.setNumber(OrderNumberWorder.getNumber());
+        oneOrder.setNumber(OrderNumberWorker.getNumber());
         oneOrder.setUserId(ThreadLocalUtil.get());
         oneOrder.setOrderTime(LocalDateTime.now());
         oneOrder.setCheckoutTime(LocalDateTime.now());
@@ -137,6 +139,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
         }).collect(Collectors.toList());
         //保存orderDetail
         boolean isSuccess2 = orderDetailService.saveBatch(orderDetailList);
+        log.info("提交订单,订单号:{}",orderId);
         //返回
         return isSuccess1&&isSuccess2?R.success("再下一单成功"):R.error("再下一单失败");
     }
@@ -175,6 +178,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
         }).collect(Collectors.toList());
         //手动装配ordersDtoPage
         ordersDtoPage.setRecords(ordersDtoList);
+        log.info("分页获取订单,第{}页/{}个",page,pageSize);
         return ordersPage!=null?R.success(ordersDtoPage):R.error("获取所有订单失败");
     }
 }

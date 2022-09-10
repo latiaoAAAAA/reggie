@@ -7,10 +7,18 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.sql.SQLIntegrityConstraintViolationException;
 
+/**
+ * 自定义错误处理
+ */
 @RestControllerAdvice(annotations = {RestController.class})
 @Slf4j
 public class GlobalExceptionHandler {
 
+    /**
+     * SQL字段值相同处理
+     * @param e
+     * @return
+     */
     @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
     public R<String> SQLrequireExceptionHandler(SQLIntegrityConstraintViolationException e){
         log.error(e.getMessage());

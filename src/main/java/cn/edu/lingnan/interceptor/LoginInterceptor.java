@@ -13,8 +13,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.util.concurrent.TimeUnit;
 
+import static cn.edu.lingnan.constants.RedisConstants.LOGIN_EMPLOYEE_TOKEN;
 import static cn.edu.lingnan.constants.RedisConstants.LOGIN_USER_TOKEN;
 
+/**
+ * 登录拦截器
+ */
 @Slf4j
 public class LoginInterceptor implements HandlerInterceptor {
 
@@ -28,31 +32,69 @@ public class LoginInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         //获取front请求头中的token
-        String token = request.getHeader("Authorization");
-        //验证
-        if (request.getSession().getAttribute("employee")!=null){
-            log.info("已登录，ID为{}",request.getSession().getAttribute("employee"));
-            ThreadLocalUtil.put((Long) request.getSession().getAttribute("employee"));
-            return true;
-        }else if (token !=null ||
-                StrUtil.isNotBlank(token)){
+        String Utoken = request.getHeader("UAuthorization");
+        //获取backend请求头中的token
+        String Etoken = request.getHeader("EAuthorization");
+
+        if (Etoken !=null || StrUtil.isNotBlank(Etoken)){
+            log.info("管理端token:{}", Etoken);
             //对比redis(redis中有，且有值，才放行)
-            if (stringRedisTemplate.hasKey(LOGIN_USER_TOKEN + token)) {
-                //获取userId
-                String userId = stringRedisTemplate.opsForValue().get(LOGIN_USER_TOKEN + token);
-                if(userId!=null||StrUtil.isNotBlank(userId)){
-                    log.info("token:{},userId:{}", token,userId);
+            if (stringRedisTemplate.hasKey(LOGIN_EMPLOYEE_TOKEN + Etoken)) {
+                //获取employeeId
+                String employeeId = stringRedisTemplate.opsForValue().get(LOGIN_EMPLOYEE_TOKEN + Etoken);
+                if(employeeId!=null||StrUtil.isNotBlank(employeeId)){
+                    log.info("管理端token:{},employeeId:{}", Etoken,employeeId);
                     //重置有效时间
-                    stringRedisTemplate.expire(LOGIN_USER_TOKEN + token,1L, TimeUnit.DAYS);
+                    stringRedisTemplate.expire(LOGIN_EMPLOYEE_TOKEN + Etoken,1L, TimeUnit.DAYS);
+                    //存入ThreadLocal
+                    ThreadLocalUtil.put(Long.valueOf(employeeId));
+                    return true;
+                }
+            }
+        }
+
+        if (Utoken !=null || StrUtil.isNotBlank(Utoken)){
+            log.info("用户端token:{}", Utoken);
+            //对比redis(redis中有，且有值，才放行)
+            if (stringRedisTemplate.hasKey(LOGIN_USER_TOKEN + Utoken)) {
+                //获取userId
+                String userId = stringRedisTemplate.opsForValue().get(LOGIN_USER_TOKEN + Utoken);
+                if(userId!=null||StrUtil.isNotBlank(userId)){
+                    log.info("用户端token:{},userId:{}", Utoken,userId);
+                    //重置有效时间
+                    stringRedisTemplate.expire(LOGIN_USER_TOKEN + Utoken,1L, TimeUnit.DAYS);
                     //存入ThreadLocal
                     ThreadLocalUtil.put(Long.valueOf(userId));
                     return true;
                 }
             }
         }
+
         log.info("未登录或登录已过期");
         response.getWriter().write(JSON.toJSONString(R.error("NOTLOGIN")));
         return false;
+//        //验证
+//        if (request.getSession().getAttribute("employee")!=null){
+//            log.info("已登录，ID为{}",request.getSession().getAttribute("employee"));
+//            ThreadLocalUtil.put((Long) request.getSession().getAttribute("employee"));
+//            return true;
+//        }else if (Utoken !=null ||
+//                StrUtil.isNotBlank(Utoken)){
+//            log.info("token:{}", Utoken);
+//            //对比redis(redis中有，且有值，才放行)
+//            if (stringRedisTemplate.hasKey(LOGIN_USER_TOKEN + Utoken)) {
+//                //获取userId
+//                String userId = stringRedisTemplate.opsForValue().get(LOGIN_USER_TOKEN + Utoken);
+//                if(userId!=null||StrUtil.isNotBlank(userId)){
+//                    log.info("token:{},userId:{}", Utoken,userId);
+//                    //重置有效时间
+//                    stringRedisTemplate.expire(LOGIN_USER_TOKEN + Utoken,1L, TimeUnit.DAYS);
+//                    //存入ThreadLocal
+//                    ThreadLocalUtil.put(Long.valueOf(userId));
+//                    return true;
+//                }
+//            }
+//        }
     }
 
     @Override

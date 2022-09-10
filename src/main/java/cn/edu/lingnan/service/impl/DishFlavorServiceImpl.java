@@ -14,6 +14,11 @@ public class DishFlavorServiceImpl extends ServiceImpl<DishFlavorMapper, DishFla
     @Autowired
     public DishFlavorMapper dishFlavorMapper;
 
+    /**
+     * 根据dishId获取对应菜品的口味 DishFlavor
+     * @param ids
+     * @return
+     */
     @Override
     public boolean removeFlavorByDishId(List<Long> ids) {
         Integer count = dishFlavorMapper.removeFlavorByDishId(ids);

@@ -1,25 +1,40 @@
+import cn.edu.lingnan.ReggieApplication;
 import cn.edu.lingnan.entity.Employee;
 import cn.edu.lingnan.entity.User;
-import cn.edu.lingnan.utils.OrderNumberWorder;
+import cn.edu.lingnan.service.EmployeeService;
+import cn.edu.lingnan.utils.RedisUtils;
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.bean.copier.CopyOptions;
-import cn.hutool.core.lang.Snowflake;
-import cn.hutool.core.lang.UUID;
-import cn.hutool.core.util.StrUtil;
-import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import javax.annotation.Resource;
+import java.util.*;
+import java.util.stream.Collectors;
 
-import static cn.edu.lingnan.constants.RedisConstants.LOGIN_USER_CODE;
+import static cn.edu.lingnan.constants.RedisConstants.EMPLOYEE_DATA;
 
+@SpringBootTest(classes = ReggieApplication.class)
 public class test {
+
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+
+    @Resource
+    private EmployeeService employeeService;
+
+    @Test  //所有employee数据存入redis
+    void addAllEmpToRedis(){
+        List<Employee> employees = employeeService.list();
+        long count = employees.stream().map(employee -> {
+            Map<String, Object> empMap = RedisUtils
+                    .BeanToMap(employee, "password", "updateTime", "createUser", "updateUser");
+            stringRedisTemplate.opsForHash().putAll(EMPLOYEE_DATA + employee.getId(), empMap);
+            System.out.println("所有employee存入redis:"+empMap);
+            return empMap;
+        }).count();
+        System.out.println("所有employee存入redis:共"+count+"条");
+    }
 
     @Test
     void test1(){
@@ -68,13 +83,38 @@ public class test {
     }
 
     @Test
-    void test7() {
-        long now = System.currentTimeMillis();
-        System.out.println("now = " + now);
-        String string = UUID.randomUUID().toString(true);
-        System.out.println("now+string = " + now + string);
-        long workerId = new Snowflake().getGenerateDateTime(1567879975232557058L);
-        System.out.println("workerId = " + workerId);
-        System.out.println("OrderNumberWorder.getNumber() = " + OrderNumberWorder.getNumber());
+    void test7(){
+        Employee employee = new Employee();
+        employee.setId(100L);
+        employee.setName("张三");
+        employee.setUsername("sange");
+        employee.setPassword("123456");
+        employee.setStatus(1);
+        Map<String, Object> map = RedisUtils.BeanToMap(employee, "status","createTime","updateTime","createUser","updateUser","phone","sex","idNumber");
+        System.out.println("map = " + map.toString());
+    }
+
+    @Test
+    void test8() {
+        ArrayList<Integer> strs = new ArrayList<>();
+        strs.add(40);
+        strs.add(10);
+        strs.add(30);
+        strs.add(50);
+        strs.add(20);
+
+        Set<String> keys = stringRedisTemplate.keys(EMPLOYEE_DATA + "*");
+        List<Employee> employeeList = keys.stream().map(key -> {
+            Employee employee = BeanUtil.fillBeanWithMap(stringRedisTemplate.opsForHash().entries(key), new Employee(), true);
+            return employee;
+        }).sorted(Comparator.comparing(Employee::getCreateTime)).collect(Collectors.toList());
+        Collections.reverse(employeeList);
+//        System.err.println("employeeList = " + employeeList.toString());
+
+        List<Employee> employeeList1 = RedisUtils.getList(
+                stringRedisTemplate, EMPLOYEE_DATA + "*", Employee.class, Employee::getCreateTime,1,5);
+        System.out.println("employeeList1 = " + employeeList1);
+        System.out.println("employeeList1 = " + employeeList1.size());
+
     }
 }

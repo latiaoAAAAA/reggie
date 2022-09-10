@@ -22,6 +22,7 @@ public class ShoppingCartServiceImpl extends ServiceImpl<ShoppingCartMapper, Sho
         Long userId = ThreadLocalUtil.get();
         //2.根据用户id查询
         List<ShoppingCart> shoppingCarts = list(new LambdaQueryWrapper<ShoppingCart>().eq(ShoppingCart::getUserId, userId));
+        log.info("获取id为{}用户的购物车",userId);
         return R.success(shoppingCarts);
     }
 
@@ -57,6 +58,7 @@ public class ShoppingCartServiceImpl extends ServiceImpl<ShoppingCartMapper, Sho
             save(shoppingCart);
             aShoppingCart = shoppingCart;
         }
+        log.info("添加购物车,商品id:{}",shoppingCart.getSetmealId()==null?shoppingCart.getDishId():shoppingCart.getSetmealId());
         return R.success(aShoppingCart);
     }
 
@@ -90,6 +92,7 @@ public class ShoppingCartServiceImpl extends ServiceImpl<ShoppingCartMapper, Sho
             removeById(aShoppingCart);
             aShoppingCart.setNumber(0);
         }
+        log.info("将id为{}的商品移出购物车",shoppingCart.getSetmealId()==null?shoppingCart.getDishId():shoppingCart.getSetmealId());
         return R.success(aShoppingCart);
     }
 
@@ -102,6 +105,7 @@ public class ShoppingCartServiceImpl extends ServiceImpl<ShoppingCartMapper, Sho
         if (!isSuccess){
             return R.error("清空失败！");
         }
+        log.info("清空{}用户的购物车",userId);
         return R.success("已清空！");
     }
 }

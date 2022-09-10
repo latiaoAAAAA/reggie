@@ -4,14 +4,15 @@ import cn.edu.lingnan.common.R;
 import cn.edu.lingnan.entity.AddressBook;
 import cn.edu.lingnan.service.AddressBookService;
 import cn.edu.lingnan.utils.ThreadLocalUtil;
-import cn.hutool.core.collection.ListUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/addressBook")
 public class AddressBookController {
@@ -30,6 +31,7 @@ public class AddressBookController {
                         .eq(AddressBook::getUserId, ThreadLocalUtil.get())
                         .eq(AddressBook::getIsDefault,1)
         );
+        log.info("获取默认地址:{}",userAddress.toString());
         return userAddress!=null?R.success(userAddress):R.error("获取默认地址失败！");
     }
 
@@ -42,6 +44,7 @@ public class AddressBookController {
         List<AddressBook> addressBooks = addressBookService.list(
                 new LambdaQueryWrapper<AddressBook>().eq(AddressBook::getUserId, ThreadLocalUtil.get())
         );
+        log.info("获取所有地址:{}",addressBooks.toString());
         return (addressBooks==null||addressBooks.isEmpty())?R.error("获取地址失败！"):R.success(addressBooks);
     }
 
@@ -53,6 +56,7 @@ public class AddressBookController {
     @GetMapping("/{id}")
     public R<AddressBook> getOne(@PathVariable("id") Long id){
         AddressBook address = addressBookService.getById(id);
+        log.info("获取单个地址:{}",address.toString());
         return address==null?R.error("获取收货地址信息失败！"):R.success(address);
     }
 
@@ -64,6 +68,7 @@ public class AddressBookController {
     @PutMapping
     public R<String> updateAddress(@RequestBody AddressBook addressBook){
         boolean isSuccess = addressBookService.updateById(addressBook);
+        log.info("修改地址:{}",addressBook.toString());
         return isSuccess?R.success("修改成功！"):R.error("修改失败！");
     }
 
@@ -76,6 +81,7 @@ public class AddressBookController {
     public R<String> addAddress(@RequestBody AddressBook addressBook){
         addressBook.setUserId(ThreadLocalUtil.get());
         boolean isSuccess = addressBookService.save(addressBook);
+        log.info("添加地址:{}",addressBook.toString());
         return isSuccess?R.success("添加收货地址成功！"):R.error("添加收货地址失败！");
     }
 
@@ -97,6 +103,7 @@ public class AddressBookController {
     @DeleteMapping
     public R<String> deleteAddress(@RequestParam("ids") List<Long> ids){
         boolean isSuccess = addressBookService.removeByIds(ids);
+        log.info("删除地址,Ids:{}",ids.toString());
         return isSuccess?R.success("删除收货地址成功"):R.error("删除收货地址失败");
     }
 }
